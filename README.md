@@ -1,24 +1,3 @@
-## Implementation Notes
-
-### Task 1A: Environment Setup
-
-**Dependency Management:**
-Converted `requirements.txt` to `pyproject.toml` using `uv`. The original `requirements.txt` was a raw `pip freeze` dump containing ~150 system-level packages. Trimmed to the 7 packages the code actually imports: `torch`, `transformers`, `datasets`, `accelerate`, `tqdm`, `numpy`, `matplotlib`.
-
-**PyTorch Installation:**
-Configured a custom PyTorch index (`https://download.pytorch.org/whl/cu130`) to ensure the CUDA-enabled build is installed rather than the CPU-only PyPI version.
-
-**Flash Attention 2:**
-No prebuilt wheel exists for the environment on the provisioned H100 (Python 3.12, CUDA 13.0, PyTorch 2.12). Building from source takes 45-60 minutes and failed in this environment. Modified `llms.py` to use `attn_implementation="eager"` as a pragmatic alternative. This is slightly slower but functionally equivalent for correctness.
-
-**Verified on:** 1x H100 NVL (Vast.ai), CUDA 13.0, Python 3.12
-
-
-
-
-
-===================
-
 # GRPO-Lite: A Self-Contained Framework for RLHF Exploration
 
 ## Important Note

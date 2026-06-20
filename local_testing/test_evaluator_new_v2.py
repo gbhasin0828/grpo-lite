@@ -17,7 +17,7 @@ def _normalize_newlines(text: str) -> str:
     return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
-class GSM8kEvaluator:
+class GSM8kEvaluatorNEW:
     def __init__(self):
         self.num_reward_functions = 5
 
@@ -52,14 +52,10 @@ class GSM8kEvaluator:
             gt_str = str(gt).strip()
             gt_i = self._parse_int(gt_str)
 
-            # First try to extract from <answer> tags
+            # Only look inside <answer> tags
             pred_str = self._extract_xml_answer(response).strip()
 
-            # No answer tag found → try extracting from raw text
-            if pred_str == "":
-                pred_str = self._extract_raw_answer(response).strip()
-
-            # Still nothing found → truly no attempt → neutral
+            # No answer tag found → neutral score
             if pred_str == "":
                 rewards.append(0.0)
                 continue
@@ -84,12 +80,7 @@ class GSM8kEvaluator:
             if extracted == "":
                 extracted = self._extract_raw_answer(response).strip()
 
-            # No answer found at all → didn't attempt → neutral
-            if extracted == "":
-                rewards.append(0.0)
-            else:
-                rewards.append(0.5 if INT_RE.fullmatch(extracted) else -0.5)
-
+            rewards.append(0.5 if INT_RE.fullmatch(extracted) else -0.5)
         return rewards
 
     def _strict_format_reward(self, completions) -> List[float]:
@@ -106,9 +97,9 @@ class GSM8kEvaluator:
             elif REVERSE_RE.search(r):
                 rewards.append(0.25)
             elif r.strip() == "":
-                rewards.append(0.0)   # didn't attempt → neutral
+                rewards.append(-0.5)
             else:
-                rewards.append(-0.5)  # tried but wrong format → penalty
+                rewards.append(-0.5)
         return rewards
 
     def _xml_count_reward(self, completions) -> List[float]:
@@ -149,3 +140,66 @@ class GSM8kEvaluator:
         for i, scores in enumerate(all_scores):
             rewards_per_func[:, i] = torch.tensor(scores, dtype=torch.float32, device=device)
         return rewards_per_func
+
+
+if __name__ == "__main__":
+
+    question = "Janet has 16 eggs. She eats 3 for breakfast. How many are left?"
+    correct_answer = "13"
+
+    completions = [
+        [{"role": "assistant", "content": "<reasoning>\n16 - 3 = 13\n</reasoning>\n<answer>\n13\n</answer>"}],
+        [{"role": "assistant", "content": "<reasoning>\n16 minus 3 equals 13\n</reasoning>\n<answer>\n13\n</answer>"}],
+        [{"role": "assistant", "content": "<reasoning>\n13\n</reasoning>\n<answer>\n13\n</answer>"}],
+        [{"role": "assistant", "content": "<reasoning>16-3=13</reasoning><answer>13</answer>"}],
+        [{"role": "assistant", "content": "Here is my answer: <reasoning>16-3=13</reasoning><answer>13</answer>"}],
+        [{"role": "assistant", "content": "<reasoning>\n16 - 3 = 12\n</reasoning>\n<answer>\n12\n</answer>"}],
+        [{"role": "assistant", "content": "<reasoning>\n16 - 3 = 14\n</reasoning>\n<answer>\n14\n</answer>"}],
+        [{"role": "assistant", "content": "<reasoning>I think</reasoning><answer>thirteen</answer>"}],
+        [{"role": "assistant", "content": "<reasoning>I think</reasoning><answer>twelve</answer>"}],
+        [{"role": "assistant", "content": "<answer>13</answer><reasoning>16-3=13</reasoning>"}],
+        [{"role": "assistant", "content": "<answer>12</answer><reasoning>16-3=12</reasoning>"}],
+        [{"role": "assistant", "content": "The answer is 13"}],
+        [{"role": "assistant", "content": "I think it is 12"}],
+        [{"role": "assistant", "content": "<reasoning>16-3=13</reasoning>"}],
+        [{"role": "assistant", "content": ""}],
+        [{"role": "assistant", "content": "<reasoning>\n16-3=13\n</reasoning>\n<answer>\n13\n</answer>\nHope this helps!"}],
+    ]
+
+    prompts = [[{"role": "user", "content": question}]] * 16
+    answer = [correct_answer] * 16
+
+    new_evaluator = GSM8kEvaluatorNEW()
+    rewards = new_evaluator.compute_rewards(prompts, completions, answer, "cpu")
+
+    print("=" * 100)
+    print("NEW EVALUATOR RESULTS")
+    print("=" * 100)
+    print(f"Tensor shape: {rewards.shape}")
+    print()
+    print(f"{'#':<3} {'Description':<25} {'Correct':>8} {'IntFmt':>8} {'Strict':>8} {'Soft':>8} {'XML':>8} {'TOTAL':>8}")
+    print("-" * 100)
+
+    labels = [
+        "1. Perfect",
+        "2. Perfect variant",
+        "3. Short reasoning",
+        "4. No newlines",
+        "5. Junk before tags",
+        "6. Wrong ans 12",
+        "7. Wrong ans 14",
+        "8. Word ans thirteen",
+        "9. Word ans twelve",
+        "10. Ans then Rsn OK",
+        "11. Ans then Rsn bad",
+        "12. No tags correct",
+        "13. No tags wrong",
+        "14. Only reasoning",
+        "15. Empty",
+        "16. Junk after ans",
+    ]
+
+    for i, label in enumerate(labels):
+        row = rewards[i]
+        total = row.sum().item()
+        print(f"{i+1:<3} {label:<25} {row[0]:>8.2f} {row[1]:>8.2f} {row[2]:>8.2f} {row[3]:>8.2f} {row[4]:>8.2f} {total:>8.2f}")
