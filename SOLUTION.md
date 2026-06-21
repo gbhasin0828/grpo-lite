@@ -13,7 +13,8 @@ No prebuilt wheel exists for the environment on the provisioned H100 (Python 3.1
 
 **Verified on:** 1x H100 NVL (Vast.ai), CUDA 13.0, Python 3.12
 
-================
+==============================================================================================================
+
 ### Task 1B: Bug Fixes in evaluator.py
 
 #### What does evaluator.py do?
@@ -151,3 +152,223 @@ between trying-but-wrong and not-trying-at-all.
 | Empty response | 0.00 | -2.50 | Penalties across all functions |
 
 
+==============================================================================================================
+
+### Task 2: (Core) Implement the Loss Function & Train a Model
+
+#### What is compute_loss trying to do?
+
+During GRPO training, for every math question we generate multiple completions (16 in real training, 4 in the below example just for my understanding). The evaluator scores each completion. Now we need to tell the model:
+"Do more of what got high scores, less of what got low scores — but don't change too drastically."
+compute_loss translates that into a single number that PyTorch uses to update the model weights via backpropagation and gradient descent.
+
+#### The 4 completions used for this example are 
+C1: "<reasoning>\n16 - 3 = 13\n</reasoning>\n<answer>\n13\n</answer>"
+C2: "<reasoning>\n16 minus 3 equals 13\n</reasoning>\n<answer>\n13\n</answer>"
+C3: "The answer is 13" (reasoning & answer tags missing)
+C4: "<reasoning>\n16-3=13\n</reasoning>\n<answer>\n13\n</answer>\nHope this helps!"
+
+#### Step 1: Get Per-Token Log Probabilities from Current Model
+The current model already generated the above 4 completions. Now we go back and look at the probabilities of each (selected) token it generated at each position.
+The token by token breakdown of C1 looks like 
+C1: ["<reasoning>", "\n", "16", "-", "3", "=", "13", "\n", "</reasoning>", "\n", "<answer>", "\n", "13", "\n", "</answer>"]  → 15 tokens
+Let's say in C1 it generated the following as probabilities for each selected token in that place
+C1: [0.819, 0.905, 0.741, 0.819, 0.905, 0.819, 0.670, 0.905, 0.819, 0.905, 0.741, 0.905, 0.819, 0.905, 0.741, mask1, mask2, mask3, mask4, mask5] 
+so for c1 the probabilities are as follows 
+
+We then take the log of each selected tokens to compute our 1st metrics (Per-Token Log Probabilities) and it will look like 
+Log C1: [-0.2, -0.1, -0.3, -0.2, -0.1, -0.2, -0.4, -0.1, -0.2, -0.1, -0.3, -0.1, -0.2, -0.1, -0.3, 0, 0, 0, 0, 0]
+
+#### Step 2: Get Per-Token Log Probabilities from Reference Model
+Just feed the output from cirrent model to reference and get probabilities for each position 
+C1: ["<reasoning>", "\n", "16", "-", "3", "=", "13", "\n", "</reasoning>", "\n", "<answer>", "\n", "13", "\n", "</answer>"]  → 15 tokens
+Corresponsing probabilities say are 
+C1: [0.72, 0.6905, 0.641, 0.72, 0.805, 0.80, 0.620, 0.75, 0.76, 0.79, 0.674, 0.5905, 0.6819, 0.7905, 0.4741, mask1, mask2, mask3, mask4, mask5]
+Now again take logs of above to get (ref_per_token_logps)
+Log C1 (reference model) = [log(0.72), log(0.6905), log(0.641), ...]
+Log C1 (reference model) = [-0.33, -0.37, -0.44, -0.33, -0.22, -0.22, -0.48, -0.29, -0.27, -0.24, -0.39, -0.53, -0.38, -0.23, -0.75, 0, 0, 0, 0, 0]
+
+#### Step 3: Compute Per-Token KL Divergence
+KL Divergence measures how much the current model has drifted from the reference model — token by token.
+We first compute the log_ratio for each token:
+log_ratio = ref_per_token_logps - per_token_logps
+
+For C1:
+[-0.13, -0.27, -0.14, -0.13, -0.12, -0.02, -0.08, -0.19, -0.07, -0.14, -0.09, -0.43, -0.18, -0.13, -0.45, 0, 0, 0, 0, 0]
+
+All values are negative — meaning the current model is MORE confident than the reference model about every token. This makes sense — the current model has already trained for some steps.
+
+We then compute KL for each token using:
+kl = exp(log_ratio) - log_ratio - 1
+
+For token 1 of C1 as an example:
+log_ratio = -0.13
+
+kl = exp(-0.13) - (-0.13) - 1
+   = 0.878  + 0.13  - 1
+   = 0.008
+
+Final KL for C1:
+kl C1: [0.008, 0.036, 0.010, 0.008, 0.007, 0.0002, 0.003, 0.018, 0.002, 0.010, 0.004, 0.092, 0.016, 0.008, 0.102, 0, 0, 0, 0, 0]
+
+Shape of KL matrix for all 4 completions: [4 × 20]
+V.IMPORTANT - In our actual exercise the shape will be [16 x 20] as for each prompt the model returns 16 responses.
+
+#### Step 4: Compute Advantages
+Before we compute the policy objective we need to know which completions were better or worse than average. This is called the advantage.
+The evaluator scores each completion across 5 reward functions and returns a [4 × 5] tensor:
+Correct  IntFmt  Strict  Soft   XML
+C1:       [2.0,    0.5,    0.5,    0.5,   0.5]   → total = 4.0
+C2:       [2.0,    0.5,   -0.5,    0.5,   0.5]   → total = 3.0
+C3:       [2.0,   -0.5,   -0.5,   -0.5,   0.1]   → total = 0.6
+C4:       [2.0,    0.5,   -0.5,    0.5,   0.3]   → total = 2.8
+
+rewards = [4.0, 3.0, 0.6, 2.8]
+
+Compute mean and standard deviation:
+mean = (4.0 + 3.0 + 0.6 + 2.8) / 4 = 2.6
+std  = 1.27
+
+Compute advantage for each completion:
+advantage = (reward - mean) / std
+
+C1: (4.0 - 2.6) / 1.27 =  1.10  ← much better than average
+C2: (3.0 - 2.6) / 1.27 =  0.31  ← slightly better than average
+C3: (0.6 - 2.6) / 1.27 = -1.57  ← much worse than average
+C4: (2.8 - 2.6) / 1.27 =  0.16  ← slightly better than average
+
+Final advantages vector shape: [4 × 1]
+advantages = [1.10, 0.31, -1.57, 0.16]
+
+In real training with 16 completions this would be [16 × 1].
+
+#### Step 5: Compute Per-Token Policy Objective
+
+Now we combine the ratio (how much the current model has changed from reference) with the advantages (how good each completion was).
+First compute the ratio for each token:
+ratio = exp(per_token_logps - ref_per_token_logps)
+      = exp(-log_ratio)
+
+
+For C1 token 1:
+ratio = exp(-(-0.13)) = exp(0.13) = 1.14
+
+
+For C1 token 12 (largest drift):
+ratio = exp(-(-0.43)) = exp(0.43) = 1.54
+
+
+Full ratio for C1:
+ratio C1: [1.14, 1.31, 1.15, 1.14, 1.13, 1.02, 1.08, 1.21, 1.07, 1.15, 1.09, 1.54, 1.20, 1.14, 1.57, 0, 0, 0, 0, 0]
+
+
+Now multiply ratio by advantage for each completion.
+Advantage for C1 = 1.10 — applied to every token position:
+policy_objective C1 = ratio C1 × 1.10
+= [1.25, 1.44, 1.26, 1.25, 1.24, 1.12, 1.19, 1.33, 1.18, 1.26, 1.20, 1.69, 1.32, 1.25, 1.73, 0, 0, 0, 0, 0]
+
+
+Advantage for C3 = -1.57 — negative because bad completion:
+policy_objective C3 = ratio C3 × (-1.57)
+= [-1.92, -1.92, -1.92, -1.92, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
+Final policy_objective shape: [4 × 20]
+C1: positive values → good completion → will be reinforced
+C2: positive values → good completion → will be reinforced  
+C3: negative values → bad completion → will be discouraged
+C4: small positive  → slightly good  → slightly reinforced
+
+
+
+#### Step 6: Combine Policy Objective with KL Penalty
+
+Now we combine the policy objective from Step 5 with the KL penalty from Step 3 to get the final per-token loss.
+per_token_loss = -(policy_objective) + beta × kl
+Where beta = 0.04
+
+For C1 token 1:
+per_token_loss = -(1.25) + 0.04 × 0.008
+               = -1.25 + 0.00032
+               = -1.2497
+Negative → good completion → PyTorch will reinforce these tokens ✅
+
+For C1 token 12 (largest drift):
+per_token_loss = -(1.69) + 0.04 × 0.092
+               = -1.69 + 0.00368
+               = -1.6863
+Still negative but KL penalty is slightly larger here because this token drifted more from the reference model.
+
+For C3 token 1:
+per_token_loss = -(-1.92) + 0.04 × 0.019
+               = 1.92 + 0.00076
+               = 1.9208
+Positive → bad completion → PyTorch will discourage these tokens ✅
+
+Final per_token_loss [4 × 20]:
+C1: [-1.25, -1.44, -1.26, -1.25, -1.24, -1.12, -1.19, -1.33, -1.18, -1.26, -1.20, -1.69, -1.32, -1.25, -1.73, 0, 0, 0, 0, 0]
+C2: [-0.34, -0.34, -0.34, -0.34, -0.34, -0.34, -0.38, -0.34, -0.34, -0.34, -0.34, -0.34, -0.34, -0.34, -0.34, 0, 0, 0, 0, 0]
+C3: [1.92,  1.92,  1.92,  1.92,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+C4: [-0.18, -0.18, -0.18, -0.18, -0.18, -0.18, -0.20, -0.18, -0.18, -0.18, -0.18, -0.18, -0.18, -0.18, -0.18, -0.18, -0.20, -0.20, -0.20, -0.20]
+Shape: [4 × 20] ✅
+
+
+
+#### Step 7: Average Down to One Loss Number
+
+We now have per_token_loss [4 × 20] but PyTorch needs one single number to do backpropagation.
+We do this in 4 sub-steps:
+
+Sub-step 1: Apply completion mask
+Multiply per_token_loss × completion_mask to zero out padding positions:
+completion_mask [4 × 20]:
+C1: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0]
+C2: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0]
+C3: [1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+C4: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+Padding positions become exactly 0 — they contribute nothing.
+
+Sub-step 2: Sum over tokens per completion
+C1: (-1.25)+(-1.44)+(-1.26)+(-1.25)+(-1.24)+(-1.12)+(-1.19)+(-1.33)+(-1.18)+(-1.26)+(-1.20)+(-1.69)+(-1.32)+(-1.25)+(-1.73) = -19.71
+C2: (-0.34)×15                                                                                                                  = -5.10
+C3: (1.92)×4                                                                                                                    =  7.68
+C4: (-0.18)×17 + (-0.20)×3                                                                                                     = -3.66
+
+Sub-step 3: Divide by real token count
+C1: -19.71 / 15 = -1.314
+C2: -5.10  / 15 = -0.340
+C3:  7.68  /  4 =  1.920
+C4: -3.66  / 20 = -0.183
+
+Sub-step 4: Average over all 4 completions
+loss = (-1.314 + (-0.340) + 1.920 + (-0.183)) / 4
+     = 0.083 / 4
+     = 0.021
+
+What does this loss number mean?
+loss = 0.021 — small positive number.
+
+C1 pulling strongly negative → good completion being reinforced
+C2 pulling negative → good completion being reinforced
+C3 pulling positive → bad completion being discouraged
+C4 pulling slightly negative → slightly good completion
+
+PyTorch now calls loss.backward() to compute gradients and optimizer.step() to update model weights.
+Over 1000 training steps we expect loss to trend negative as the model learns to consistently produce correct, well-formatted answers.
+
+Full shape summary
+per_token_logps          [4 × 20]
+ref_per_token_logps      [4 × 20]
+log_ratio                [4 × 20]
+kl                       [4 × 20]
+ratio                    [4 × 20]
+advantages               [4 × 1]
+policy_objective         [4 × 20]
+per_token_loss           [4 × 20]
+masked_loss              [4 × 20]
+sum per completion       [4 × 1]
+divide by length         [4 × 1]
+final loss               scalar
+
+
+==============================================================================================================
