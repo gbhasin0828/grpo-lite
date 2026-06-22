@@ -1,0 +1,291 @@
+Question: 300 cows in a field are made up of male and female cows. There are twice as many females as males. Half the females are spotted, and half the males have horns. How many more females with spots are there than males with horns?
+Answer: 50
+
+--- Completion 1 ---
+<reasoning>
+    <goals>
+        1
+    </goals>
+    <answer>
+        200
+    </answer>
+</reasoning>
+
+--- Completion 2 ---
+<reasoning>
+The number of females is three times the number of males, so there are 300/2 = 150 females. The number of spotted females is 300/4 = 75. The number of males with horns is 300/2 = 150. There are 75 - 150 = -75 more females with spots than males with horns.
+</reasoning>
+<answer>150</answer>
+
+--- Completion 3 ---
+<reasoning>
+The problem can be broken down into the following steps:
+
+1. The total number of cows is 300.
+   - The number of females is twice the number of males.
+   - Half of the females are spotted.
+   - Half of the males have horns.
+
+2. Calculate the number of females (2 males).
+3. Calculate the number of females with spots.
+4. Calculate the number of males with horns.
+5. Find the difference between the number of spotted females and the number of horned males.
+
+Let's solve:
+
+- Number of females = 2 males
+  - Percentage of spotted females = 0.5
+  - Therefore, number of spotted females = 2 * 0.5 = 1
+  - Total spotted females = 2 males * 0.5 = 1
+- Number of males with horns = 2 males
+  - Percentage of horned males = 0.5
+  - Therefore, number of horned males = 2 * 0.5 = 1
+- Difference = number of spotted females - number of horned males
+
+The difference is 1 - 1 = 0.
+
+Therefore, there are 0 more spotted females than horned males in the field.
+</reasoning>
+<answer>0</answer>
+
+--- Completion 4 ---
+<reasoning>
+From the information given, we know that there are twice as many females as males, so let's represent the number of males as m and the number of females as f. We also know that half the females have spots, so half of f is 0.5m. And half the males have horns, so half of m is 0.5f. 
+
+We also know that the total number of cows is 300, so m + f = 300.
+
+Now we can set up the equation:
+0.5m = 0.5f
+
+To solve for m, we can divide both sides by 0.5:
+m = 0.5f
+
+Now substitute m for 0.5f in the total number of cows equation:
+300 = m + f
+300 = 0.5f + f
+
+Now we can combine like terms:
+300 = 1.5f
+
+Now we can solve for f:
+f = 300 / 1.5
+f = 200
+
+Now that we know there are 200 females, we can find the number of males:
+m = 300 - f
+m = 300 - 200
+m = 100
+
+Now we can find the number of females with spots and males with horns:
+Female with spots = 0.5m = 0.5 * 100 = 50
+Males with horns = 0.5f = 0.5 * 200 = 100
+
+The number of females with spots is 50 more than the number of males with horns.
+
+The result is: 50 Females with Spots - 100 Males with Horns = -50
+The answer is -50
+
+</reasoning>
+
+--- Completion 5 ---
+<reasoning>
+The total number of cows is divisible by 3, so the number of males and females is also divisible by 3. Let’s take a guess that the number of males has 3 as a remainder.
+
+1. Total cows are: 300
+2. Number of males is: 300 / 3 = 100
+3. Since 2/3 of the females are spotted (and half the males have horns), the number of spotted females is: 200 (since 200/3 is not an integer, it must be rounded to the nearest lower whole number).
+
+Now let's calculate the difference between the number of males with spots and males with horns:
+
+Number of males with spots: 200
+Number of males with horns: 100
+
+Difference: 200 - 100 = 100
+
+The answer is 100.
+</reasoning>
+<integer>
+
+--- Completion 6 ---
+<reasoning>
+    <male-cows>
+        300
+    </male-cows>
+    <female-cows>
+        300
+    </female-cows>
+    <spotted-females>
+        200
+    </spotted-females>
+    <unspotted-males>
+        100
+    </unspotted-males>
+</reasoning>
+<answer>
+100
+</answer>
+
+--- Completion 7 ---
+<reasoning>
+In the first part, there are 300 cows
+In the second part, there are twice as many females as males, so there are (2/3) * 300 = 200 females and 300 - 200 = 100 males
+In the third part, half the females are spotted, so there are (2/3) * 200 = 133 females with spots and 200 - 133 = 67 females without spots
+In the fourth part, half the males have horns, so there are (1/2) * 100 = 50 males with horns and 100 - 50 = 50 males without horns
+To find how many older females there are with spots, you subtract the number of females with spots from the number of females with spots without spots: 67 - 133 = -66
+To find how many older males there are without horns, you subtract the number of males without horns from the number of males with horns without horns: 50 - 50 = 0
+The difference between the number of older females with spots and older males without horns is -66
+The answer
+-66
+
+--- Completion 8 ---
+<reasoning>
+In a field of 300 cows, there are twice as many females as males. Let's say there are 150 males and 150 females. Half of the females, 75, are spotted. Half of the males, 150, have horns. The number of females with spots is 75, and the number of males with horns is 150. The difference is (75 - 150) = -75. So there are 75 fewer females with spots than males with horns.
+</reasoning>
+<answer>
+75
+</answer>
+
+--- Completion 9 ---
+<reasoning>
+Three hundred cows in a field are made up of male and female cows. There are twice as many females as males, so there are 150 females and 50 males. Half the females are spotted, which is 75 spotted females. Half the males have horns, which is 25 males with horns. The difference between spotted females and horned males is 50 spotted females - 25 horned males = 25.
+</reasoning>
+<answer>25</answer>
+
+--- Completion 10 ---
+<reasoning>
+Let's denote the number of males as \( m \) and the number of females as \( f \). According to the problem, there are twice as many females as males, so we have:
+
+\[ f = 2m \]
+
+Also, half the females are spotted, and half the males have horns. Since half the females are spotted and there are twice as many females as males, half the men are also spotted. This means the number of spotted males is \( \frac{m}{2} \), and the number of spotted females is also \( \frac{m}{2} \). The number of non-spotted males is \( m - \frac{m}{2} = \frac{m}{2} \), and the number of non-spotted females is \( f - \frac{m}{2} \).
+
+The total number of spotted cows is:
+
+\[ m + \frac{m}{2} = \frac{3m}{2} \]
+
+The total number of non-spotted cows is:
+
+\[ \frac{m}{2} + f \]
+
+The number of non-spotted males is:
+
+\[ \frac{m}{2} \]
+
+The number of non-spotted females is:
+
+\[ f - \frac{m}{2} \]
+
+The total number of non-spotted cows is:
+
+\[ \frac{m}{2} + f \]
+
+The total number of spotted cows is:
+
+\[ \frac{3m}{2} \]
+
+The difference between the number of spotted males and non-spotted males is:
+
+\[ \frac{m}{2} - \frac{m}{2} = 0 \]
+
+The difference between the number of spotted females and non-spotted females is:
+
+\[ \frac{m}{2} - f + \frac{m}{2} = m - \frac{m}{2} = \frac{m}{2} \]
+
+Since the problem does not specify the exact number of males, let's assume there are 100 cows in total. Then, the number of males and females are:
+
+\[ m = 100 - f \]
+\[ f = 2m = 2(100 - f) = 200 - 2f \]
+
+Solving for \( f \) and \( m \):
+
+\[ m + \frac{m}{2} + \frac{m}{2} = 200 \]
+\[ 2m = 200 \]
+\[ m = 100 \]
+\[ f = 100 - 100 = 0 \]
+
+So, there are 100 males and 0 females. The number of spotted females is half of the total number of females, which is \( \frac{f}{2} = 0 \), but we need to account for the spotted females part, so:
+
+The number of female with spots is 50 (half of 100 females), and the number of males with horns is 50 (half of 100 males).
+
+The difference is:
+
+\[ 50 - 50 = 0 \]
+
+The answer is:
+
+\( \boxed{0} \)
+
+--- Completion 11 ---
+<reasoning>
+  Let's denote the number of male cows as M and the number of female cows as F.
+  According to the problem, we have:
+  M + F = 300
+  F = 2M
+  Since half of the females (F/2) are spotted and half of the males (F/2) have horns,
+  then we have:
+  (F/2) + (F/2) = 2F
+  Therefore, the total number of females with spots is (F/2) = (2M/2) = M and the total number of males with horns is (F/2) = (2M/2) = M.
+  So, the total number of females with spots is 300 - M and the total number of males with horns is 300 - M.
+  Therefore, the difference between the number of females with spots and males with horns is 300 - M - (300 - M) = 0.
+  Hence, there are 0 more females with spots than males with horns.
+</reasoning>
+<answer>0</answer>
+
+--- Completion 12 ---
+<reasoning>
+In the field, there are 150 male cows.
+Since there are twice as many females as males, there are 75 female cows.
+Half the females are spotted, and half have horns, so there are 37.5 females with spotted ears.
+And half the males have horns, so there are 12.5 males with horns.
+There are 37.5 females with spotted ears - 12.5 males with horns = 25 more females with spots than males with horns.
+</reasoning>
+<answer>25</answer>
+
+--- Completion 13 ---
+<reasoning>
+In a field of 300 cows, the number of females is 300/2 = 150. Out of these 150 females, half have spots (150/2 = 75), and the other half (150/2) have horns. Therefore, there are 75 females with spots and 75 males with horns. To find the difference, 75 - 75 = 0 females with spots have horns.
+</reasoning>
+
+<answer>0</answer>
+
+--- Completion 14 ---
+<reasoning>
+The total number of cows is 300. Given that half the females are spotted and half the males have horns, there are 150 spotted females and 150 males with horns. 
+
+Hence, the number of females with spots is 150, and the number of males with horns is 150.
+
+To find the difference between the number of females with spots and males with horns, we subtract 150 from 150:
+
+150 - 150 = 0
+
+So, there are 0 more females with spots than males with horns.
+<answer>
+0
+</answer>
+
+--- Completion 15 ---
+<reasoning>
+  Let's assume there are F males and M females.
+  From the problem, we have the following information:
+  - F + M = 300
+  - M = 2F
+  - Half the females are spotted, so there are F/2 spotted females.
+  - Half the males have horns, so there are M/2 males with horns.
+  - We need to find the difference between the number of females with spots and males with horns.
+  - We'll find F/2 - M/2.
+  - Substituting M = 2F into the equation, we get F/2 - (2F/2) = F/2 - F/2 = 0.
+  - Therefore, the number of females with spots is equal to the number of males with horns.
+  <answer>0</answer>
+</reasoning>
+
+--- Completion 16 ---
+<reasoning>
+In a field of 300 cows, there are 250 females and 150 males.
+Half the females are spotted, so there are 125.5 spotted females.
+Half the males have horns, so there are 150 horns in total.
+Therefore, there are 125.5 females with spots and 150 males with horns.
+Difference is: 125.5 - 150 = -24.5
+The answer is -24.5.
+</reasoning>
+<answer>-24.5</answer>
+

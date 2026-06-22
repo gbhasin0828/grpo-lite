@@ -300,9 +300,46 @@ def compute_loss(
         loss: The computed GRPO loss
         metrics: Dictionary containing additional metrics (response length and kl divergence)
     """
-    # TODO: Implement the GRPO loss function
-    # See README.md Task 2 for implementation steps
-    raise NotImplementedError("Implement compute_loss")
+
+    # Step 1: Get per-token log probs from current model (with gradients)
+    logits_to_keep = completion_ids.size(1)
+    per_token_logps = utils.get_per_token_logps(
+        model, prompt_completion_ids, attention_mask, logits_to_keep
+    )
+
+    # Step 2: Get per-token log probs from reference model (no gradients)
+    with torch.inference_mode():
+        ref_per_token_logps = utils.get_per_token_logps(
+            base_model, prompt_completion_ids, attention_mask, logits_to_keep
+        )
+
+    # Step 3: Compute per-token KL divergence
+    log_ratio = ref_per_token_logps - per_token_logps
+    kl = torch.exp(log_ratio) - log_ratio - 1
+
+    # Step 4: Compute importance sampling ratio
+    ratio = torch.exp(per_token_logps - ref_per_token_logps)
+
+    # Step 5: Compute per-token policy objective
+    policy_objective = ratio * advantages.unsqueeze(1)
+
+    # Step 6: Compute per-token loss
+    per_token_loss = -(policy_objective) + args.kl_weight_beta * kl
+
+    # Step 7: Apply mask, average over tokens, average over completions
+    masked_loss = (per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1).clamp(min=1)
+    loss = masked_loss.mean()
+
+    # Step 8: Compute metrics
+    mean_kl = (kl * completion_mask).sum(dim=1) / completion_mask.sum(dim=1).clamp(min=1)
+    response_length = completion_mask.sum(dim=1).float().mean().item()
+
+    metrics = {
+        "kl": mean_kl.mean().item(),
+        "response_length": response_length
+    }
+
+    return loss, metrics
 
 def grpo_loss(
         model: PreTrainedModel,
@@ -490,7 +527,7 @@ if __name__ == "__main__":
             model = AutoModelForCausalLM.from_pretrained(
                 latest_checkpoint_dir,
                 torch_dtype=torch.bfloat16,
-                attn_implementation="flash_attention_2",
+                attn_implementation="eager",
                 device_map=None,
             ).to(device)
 
