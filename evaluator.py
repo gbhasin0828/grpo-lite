@@ -111,10 +111,58 @@ class GSM8kEvaluator(RewardEvaluator):
         m = ANSWER_RE.search(text)
         return m.group(1).strip() if m else ""
 
+ 
+
     def _extract_raw_answer(self, text: str) -> str:
-        """Fallback: extract last number from raw text if no tags found."""
-        numbers = re.findall(r'\d+', text)
+        """
+        Fallback method to extract a number from raw text when no <answer> tags are found.
+        
+        We try three strategies in order:
+
+        Strategy 1: Find the next digit number immediately after the word 'answer' or 'result'.
+        Examples handled:
+            'the answer I computed is 50'  → '50'
+            'answer: 50'                   → '50'
+            'answer = -50'                 → '-50'
+            'the result is 50'             → '50'
+        We use [^0-9-]* to skip any non-digit characters between 'answer' and the number,
+        so we always get the NEXT number after the word 'answer', not the first or last
+        number in the entire text.
+
+        Strategy 2: Find a word number immediately after the word 'answer' or 'result'.
+        Examples handled:
+            'the answer I computed is Fifty'  → '50'
+            'the answer is twenty five'       → '25'
+        We use word2number (w2n) to convert word numbers to integers.
+        If w2n cannot parse the word, we move to Strategy 3.
+
+        Strategy 3: Last resort — return the last digit number in the entire text.
+        Examples handled:
+            'there are 100 males and 50 females so 50'  → '50'
+        This is unreliable but better than returning nothing.
+        The format reward functions will penalize responses that don't use <answer> tags,
+        so this fallback should rarely be needed once training progresses.
+        """
+        # Strategy 1: Find next digit number after "answer" or "result"
+        m = re.search(r'(?:answer|result)[^0-9-]*(-?\d+)', text, re.IGNORECASE)
+        if m:
+            return m.group(1)
+        
+        # Strategy 2: Find next word number after "answer" or "result"
+        m = re.search(r'(?:answer|result)[^a-zA-Z]*([a-zA-Z][a-zA-Z\s]+?)(?:\.|,|\d|$)', text, re.IGNORECASE)
+        if m:
+            try:
+                return str(w2n.word_to_num(m.group(1).strip()))
+            except:
+                pass
+        
+        # Strategy 3: Last resort — last number in text
+        numbers = re.findall(r'-?\d+', text)
         return numbers[-1] if numbers else ""
+
+
+
+
 
     def _parse_int(self, s: str) -> Optional[int]:
         s = s.strip()
