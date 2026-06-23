@@ -372,3 +372,94 @@ final loss               scalar
 
 
 ==============================================================================================================
+
+### Task 2B: Training Results & Observations
+
+#### Training Configuration
+
+| Parameter | Value |
+|---|---|
+| Model | Qwen/Qwen2-0.5B-Instruct |
+| Dataset | GSM8K (7,473 training questions) |
+| Training Steps | 1000 |
+| Eval Every | 100 steps |
+| Save Every | 100 steps |
+| Learning Rate | 5e-6 |
+| Num Chains | 16 completions per question |
+| Temperature | 0.9 |
+| KL Beta | 0.04 |
+| Gradient Accumulation | 4 steps |
+| Hardware | 1x H100 NVL (Vast.ai) |
+| Training Time | ~2 hours 11 minutes |
+
+#### Accuracy Results
+
+We evaluated both the base model and trained model on 100 GSM8K test questions:
+
+| Model | Accuracy |
+|---|---|
+| Base model (Qwen2-0.5B-Instruct, no training) | 10% |
+| Trained model (after 1000 GRPO steps) | 36% |
+| **Improvement** | **+26%** |
+
+The trained model is **3.6x more accurate** than the base model after just 1000 training 
+steps. This was achieved purely through GRPO reward signals — no supervised fine tuning, 
+no human labels, no labeled reasoning traces.
+
+#### Plot Observations
+
+**Correctness Reward**
+Started around -0.5 and trended upward toward positive values over 1000 steps. 
+The model gradually learned to produce correct answers.
+
+**Format Rewards (Int, Strict, Soft, XML Count)**
+All format rewards improved over training:
+- Integer format reward trended toward +0.5 — model learned to output clean integers
+- Soft format reward improved — model learned to use XML tags in correct order
+- XML count reward stayed consistently positive — model reliably included all 4 tags
+- Strict format reward showed the most variance — exact newline formatting is harder to learn
+
+**Total Reward**
+Trended from negative/zero at the start to consistently positive by step 1000. 
+The model went from producing mostly wrong, unformatted responses to producing 
+correct, well-formatted responses.
+
+**KL Divergence**
+Stayed bounded between 0 and 3.0 throughout training. The KL penalty (beta=0.04) 
+successfully prevented the model from drifting too far from the reference model.
+
+**Training Loss**
+High and noisy in early steps due to large advantages when the model is far from 
+optimal. Stabilized and trended down as training progressed.
+
+**Reward Standard Deviation**
+Stayed healthy throughout training — meaning the 16 completions per question 
+maintained variance in quality, giving a useful training signal throughout.
+
+#### Key Insights
+
+**1. GRPO works without any labeled data**
+The model improved from 10% to 36% accuracy using only reward signals from the 
+evaluator. No human-labeled reasoning traces were needed. The model discovered 
+effective reasoning strategies purely through trial and error across 16,000 
+generated completions.
+
+**2. Format and correctness learned simultaneously**
+The multi-reward design (5 reward functions) allowed the model to learn both 
+correct answers AND proper XML formatting at the same time. Early in training 
+the model focused on getting tags right. Later it focused on getting math right.
+
+**3. KL penalty is critical**
+Without the KL penalty the model would reward hack — finding degenerate strategies 
+that score high on rewards but produce garbage responses. The KL penalty kept the 
+model grounded in its original language understanding while improving math reasoning.
+
+**4. 0.5B parameters is surprisingly capable**
+A 500 million parameter model trained for just 2 hours reached 36% accuracy on 
+GSM8K — a benchmark that requires multi-step arithmetic reasoning. This demonstrates 
+the power of GRPO even at small scale.
+
+**5. More training would help**
+1000 steps covers only ~13% of the GSM8K training set. Training for 5000-10000 
+steps would likely push accuracy well above 50%. The accuracy curve had not yet 
+plateaued at step 1000.

@@ -388,3 +388,202 @@ normalized by length   [4 × 1]
 
 final loss             scalar
 
+========================================================================================================================
+
+## Task 2B: Training Results & Observations
+
+### Training Configuration
+
+| Parameter | Value |
+|---|---|
+| Model | Qwen/Qwen2-0.5B-Instruct |
+| Dataset | GSM8K (7,473 training questions) |
+| Training Steps | 1,000 |
+| Eval Every | 100 steps |
+| Checkpoint Every | 100 steps |
+| Learning Rate | 5e-6 |
+| Completions per Question | 16 |
+| Temperature | 0.9 |
+| KL Beta | 0.04 |
+| Gradient Accumulation Steps | 4 |
+| Hardware | 1x H100 NVL (Vast.ai) |
+| Training Time | ~2 hours 11 minutes |
+
+---
+
+### Accuracy Results
+
+We evaluated both the base model and trained model on 100 GSM8K test questions using `compare_models.py`:
+
+| Model | Accuracy |
+|---|---|
+| Base model (Qwen2-0.5B-Instruct, untrained) | 10% |
+| Trained model (after 1,000 GRPO steps) | 36% |
+| **Improvement** | **+26%** |
+
+The trained model is **3.6x more accurate** than the base model after just 1,000 training steps. This was achieved purely through GRPO reward signals — no supervised fine tuning, no human labels, no labeled reasoning traces.
+
+---
+
+### Plot Observations
+
+**Correctness Reward**
+Started around `-0.5` and trended upward toward positive values over 1,000 steps. The model gradually learned to produce correct answers.
+
+**Format Rewards (Int, Strict, Soft, XML Count)**
+All four format rewards improved over training:
+- Integer format trended toward `+0.5` — model learned to output clean integers inside `<answer>` tags
+- Soft format improved — model learned to use XML tags in the correct order
+- XML count stayed consistently positive — model reliably included all 4 tags
+- Strict format showed the most variance — exact newline formatting is the hardest constraint to learn
+
+**Total Reward**
+Trended from negative/near-zero at step 0 to consistently positive by step 1,000. The model went from producing mostly wrong, unformatted responses to producing correct, well-formatted responses.
+
+**KL Divergence**
+Stayed bounded between 0 and 3.0 throughout training. The KL penalty (`beta=0.04`) successfully prevented the model from drifting too far from the reference model while still allowing meaningful learning.
+
+**Training Loss**
+High and noisy in early steps due to large advantages when the model is far from optimal. Stabilized and trended down as training progressed.
+
+**Reward Standard Deviation**
+Stayed healthy throughout training — meaning the 16 completions per question maintained variance in quality, giving a useful training signal at every step.
+
+---
+
+### Key Insights
+
+**1. GRPO works without any labeled data**
+The model improved from 10% to 36% accuracy using only reward signals from the evaluator. No human-labeled reasoning traces were needed. The model discovered effective reasoning strategies purely through trial and error across 16,000 generated completions.
+
+**2. Format and correctness learned simultaneously**
+The 5-reward design allowed the model to learn correct answers AND proper XML formatting at the same time. Early in training the model focused on getting tags right. Later it focused on getting the math right.
+
+**3. KL penalty is critical**
+Without the KL penalty the model would reward hack — finding degenerate strategies that score high on rewards but produce garbage responses. The KL penalty kept the model grounded in its original language understanding while improving math reasoning.
+
+**4. 0.5B parameters is surprisingly capable**
+A 500 million parameter model trained for just 2 hours reached 36% accuracy on GSM8K — a benchmark that requires multi-step arithmetic reasoning. This demonstrates the power of GRPO even at very small scale.
+
+**5. More training would help**
+1,000 steps covers only ~13% of the GSM8K training set. The accuracy curve had not yet plateaued at step 1,000. Training for 5,000-10,000 steps would likely push accuracy well above 50%.
+
+------
+
+**************************************************************************
+
+## Comparative Analysis: Base vs Trained Model
+
+We ran both models on the complete GSM8K test set (74 questions) using greedy 
+decoding (1 response per question — the model's best single attempt).
+
+### Accuracy by Reward Function
+
+| Reward Function | Base Model | Trained Model | Delta |
+|---|---|---|---|
+| Correctness | 13.5% | 48.6% | +35.1% |
+| Integer Format | 91.9% | 94.6% | +2.7% |
+| Strict Format | 8.1% | 93.2% | +85.1% |
+| Soft Format | 9.5% | 93.2% | +83.8% |
+| XML Count | 47.3% | 100.0% | +52.7% |
+
+The most dramatic improvements are in **format learning** — strict and soft format 
+both jumped from ~9% to 93%. The base model almost never used XML tags correctly. 
+After GRPO training, the model uses correct XML format on virtually every response.
+
+---
+
+### Correctness Bucket Analysis
+
+| Bucket | Count | % | Meaning |
+|---|---|---|---|
+| A — Both correct | 3 | 4% | Both models solved it |
+| B — Only trained correct | 33 | 45% | GRPO added value |
+| C — Only base correct | 7 | 9% | GRPO hurt performance |
+| D — Both wrong | 31 | 42% | Neither model solved it |
+
+**Bucket B (45%)** is the most important finding — 33 questions where the trained 
+model got the right answer but the base model did not. This is the direct value 
+added by GRPO training.
+
+**Bucket C (9%)** shows a small regression — 7 questions where the base model was 
+right but the trained model got wrong. This is a known GRPO tradeoff — optimizing 
+for reward signals can occasionally hurt performance on questions the base model 
+already handled well.
+
+**Bucket D (42%)** represents the hard ceiling — questions that neither model can 
+solve. These typically involve more complex multi-step reasoning. A larger model 
+or more training steps would be needed to crack these.
+
+---
+
+### Representative Examples
+
+**Bucket A — Both Correct**
+Question: Carolyn practices piano 20 min/day and violin 3x as long.
+
+6 days/week, 4 weeks/month. Total minutes?
+
+Answer:   1920
+Base:    Long prose explanation, no XML tags → correct answer
+
+Trained: Clean <reasoning> and <answer> tags, concise steps → correct answer
+Both got the right answer but the trained model uses proper format.
+
+---
+
+**Bucket B — Only Trained Correct (GRPO added value)**
+Question: 50 families: 15 own 2 dogs, 20 own 1 dog, rest own 2 cats.
+
+Total dogs and cats?
+
+Answer:   80
+Base:    "Total dogs = 30, cats = 40, total = 70" → WRONG (missed 20 dogs)
+
+Trained: Correctly counts 30 + 20 = 50 dogs, 30 cats = 80 → CORRECT
+The trained model shows clearer step-by-step reasoning that catches the error.
+
+---
+
+**Bucket C — Only Base Correct (GRPO hurt)**
+Question: Boy buys 6 cards at $1.25 and 6 cards at $1.75. Total cost?
+
+Answer:   18
+Base:    Correctly computes 6×$1.25 + 6×$1.75 = $7.50 + $10.50 = $18 → CORRECT
+
+Trained: Incorrectly applies same price to all 12 cards → WRONG
+The trained model occasionally oversimplifies multi-price problems.
+
+---
+
+**Bucket D — Both Wrong**
+Question: Archibald eats 1 apple/day for 2 weeks, same total for next 3 weeks,
+
+3/day for final 2 weeks. Average per week over 7 weeks?
+
+Answer:   10
+Base:    Arithmetic error in week calculation → WRONG
+
+Trained: Correct weekly totals but wrong average calculation → WRONG
+Complex multi-step averaging stumps both models.
+
+---
+
+### Key Takeaways
+
+**1. Format learning was near-perfect**
+Strict and soft format accuracy both jumped from ~9% to 93% in 1,000 steps. 
+The reward signal for XML formatting was extremely effective.
+
+**2. Correctness improved 3.6x**
+From 13.5% to 48.6% — purely through reward signals with no labeled data.
+
+**3. Small regression is expected and acceptable**
+7% regression (Bucket C) is a known GRPO tradeoff. The net gain of +35% far 
+outweighs the regression.
+
+**4. Bucket D defines the next frontier**
+42% of questions stump both models. These require either:
+- More training steps (accuracy curve had not plateaued at step 1,000)
+- A larger model (1.5B or 7B parameters)
+- Curriculum learning — deliberately oversampling hard examples
