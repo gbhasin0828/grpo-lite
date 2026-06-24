@@ -394,23 +394,23 @@ final loss               scalar
 
 #### Accuracy Results
 
-We evaluated both the base model and trained model on 100 GSM8K test questions:
+I evaluated both the base model and trained model on the complete GSM8K test set (74 questions):
 
 | Model | Accuracy |
 |---|---|
-| Base model (Qwen2-0.5B-Instruct, no training) | 10% |
-| Trained model (after 1000 GRPO steps) | 36% |
-| **Improvement** | **+26%** |
+| Base model (Qwen2-0.5B-Instruct, no training) | 13.5% |
+| Trained model (after 1,000 GRPO steps) | 48.6% |
+| **Improvement** | **+35.1%** |
 
-The trained model is **3.6x more accurate** than the base model after just 1000 training 
+The trained model is **3.6x more accurate** than the base model after just 1,000 training 
 steps. This was achieved purely through GRPO reward signals — no supervised fine tuning, 
 no human labels, no labeled reasoning traces.
 
 #### Plot Observations
 
 **Correctness Reward**
-Started around -0.5 and trended upward toward positive values over 1000 steps. 
-The model gradually learned to produce correct answers.
+Started around -0.5 and trended upward toward +1.5 by step 1,000. 
+The model gradually learned to produce correct answers over training.
 
 **Format Rewards (Int, Strict, Soft, XML Count)**
 All format rewards improved over training:
