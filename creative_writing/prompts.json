@@ -1,0 +1,241 @@
+{
+  "metadata": {
+    "total": 75,
+    "genres": {
+      "literary_dramatic": 15,
+      "thriller_mystery": 15,
+      "sci_fi_speculative": 15,
+      "dark_unsettling": 10,
+      "warm_hopeful": 10,
+      "comic_absurdist": 10
+    },
+    "description": "Opening lines for creative writing RL training. Each line is designed to maximise completion variance across 16 model generations."
+  },
+  "prompts": [
+
+    {"id": 1, "genre": "literary_dramatic",
+     "text": "She had rehearsed leaving him four hundred times, but nobody warns you about the smell of someone's coffee in the morning."},
+
+    {"id": 2, "genre": "literary_dramatic",
+     "text": "My father's last words to me were instructions for fixing a lawnmower, and I have spent twenty years trying to hear something else in them."},
+
+    {"id": 3, "genre": "literary_dramatic",
+     "text": "The interpreter at the funeral translated everything except the one sentence that mattered."},
+
+    {"id": 4, "genre": "literary_dramatic",
+     "text": "She returned the library book forty-one years late and the librarian said, without looking up, 'I wondered when you'd come back.'"},
+
+    {"id": 5, "genre": "literary_dramatic",
+     "text": "They had been married long enough that silence had developed its own grammar."},
+
+    {"id": 6, "genre": "literary_dramatic",
+     "text": "The photograph was taken three seconds before everything changed, and everyone in it is smiling."},
+
+    {"id": 7, "genre": "literary_dramatic",
+     "text": "He sold the house, the car, and the dog, but he could not bring himself to cancel her magazine subscriptions."},
+
+    {"id": 8, "genre": "literary_dramatic",
+     "text": "The night my mother forgot my name was also the night she remembered everything she had never told me."},
+
+    {"id": 9, "genre": "literary_dramatic",
+     "text": "After the diagnosis, he started finishing things — books he had abandoned, sentences he had left hanging, a letter he had been writing for eleven years."},
+
+    {"id": 10, "genre": "literary_dramatic",
+     "text": "The violin had not been played since the war, and when she finally opened the case, the rosin had turned to dust and something else had not."},
+
+    {"id": 11, "genre": "literary_dramatic",
+     "text": "Two strangers reached for the same book at the estate sale, and one of them recognised the handwriting in the margins."},
+
+    {"id": 12, "genre": "literary_dramatic",
+     "text": "She had kept every voicemail he ever left her, and now she was trying to decide which ones to delete before she died."},
+
+    {"id": 13, "genre": "literary_dramatic",
+     "text": "The town built a statue of him before he had done the thing he would be remembered for."},
+
+    {"id": 14, "genre": "literary_dramatic",
+     "text": "He came back from the war fluent in a language no one in his family spoke, and he never explained how."},
+
+    {"id": 15, "genre": "literary_dramatic",
+     "text": "The last entry in her journal was a grocery list, and below the groceries, in different ink, someone else had written a single word."},
+
+    {"id": 16, "genre": "thriller_mystery",
+     "text": "The ransom note was written in her own handwriting — but she had been in a coma for three days."},
+
+    {"id": 17, "genre": "thriller_mystery",
+     "text": "The detective had solved every case in his career except one, and that one had just walked into his office wearing a different face."},
+
+    {"id": 18, "genre": "thriller_mystery",
+     "text": "Every person who had ever rented apartment 4B had disappeared within a year, and the landlord had stopped asking for references."},
+
+    {"id": 19, "genre": "thriller_mystery",
+     "text": "The witness protection agency had kept her safe for twelve years, until she recognised her own name in a true crime podcast."},
+
+    {"id": 20, "genre": "thriller_mystery",
+     "text": "The body in the library had no fingerprints — not smudged, not wiped, simply absent, as though they had never existed."},
+
+    {"id": 21, "genre": "thriller_mystery",
+     "text": "She had been hired to find a missing woman and had just discovered that the missing woman and her client had the same birthday, the same blood type, and the same scar."},
+
+    {"id": 22, "genre": "thriller_mystery",
+     "text": "The security footage showed the vault being opened from the inside, which was impossible because no one had gone in."},
+
+    {"id": 23, "genre": "thriller_mystery",
+     "text": "He had been following the suspect for three days before he realised the suspect had been following him for four."},
+
+    {"id": 24, "genre": "thriller_mystery",
+     "text": "The poison had no antidote because, according to every database in the world, it did not exist."},
+
+    {"id": 25, "genre": "thriller_mystery",
+     "text": "The hostage negotiator picked up the phone and heard her own voice on the other end."},
+
+    {"id": 26, "genre": "thriller_mystery",
+     "text": "The map led exactly where it promised, and what was there was exactly what she had been told to fear her entire life."},
+
+    {"id": 27, "genre": "thriller_mystery",
+     "text": "Every victim had one thing in common: they had all, at some point, reported the same dream."},
+
+    {"id": 28, "genre": "thriller_mystery",
+     "text": "The assassin stopped mid-mission when she recognised the target's laugh from a childhood she had been told she never had."},
+
+    {"id": 29, "genre": "thriller_mystery",
+     "text": "The trial had lasted six weeks, and on the last day, the defendant produced a photograph that made the judge close her eyes for a very long time."},
+
+    {"id": 30, "genre": "thriller_mystery",
+     "text": "The code hidden in the painting had been there for three hundred years, and someone had only just realised it was instructions."},
+
+    {"id": 31, "genre": "sci_fi_speculative",
+     "text": "The last human alive was not alone — the machine sitting across from her had started crying."},
+
+    {"id": 32, "genre": "sci_fi_speculative",
+     "text": "When they finally made contact, the alien message was not a greeting but an apology, and it was addressed to someone specific."},
+
+    {"id": 33, "genre": "sci_fi_speculative",
+     "text": "The time traveller arrived in the past and immediately recognised the street, the season, and the terrible mistake she was about to make."},
+
+    {"id": 34, "genre": "sci_fi_speculative",
+     "text": "In 2047, memories became transferable, and the black market for other people's childhoods was worth more than oil."},
+
+    {"id": 35, "genre": "sci_fi_speculative",
+     "text": "The colony ship had been travelling for two hundred years when the crew discovered a note in the captain's log written in a language that wouldn't be invented for another century."},
+
+    {"id": 36, "genre": "sci_fi_speculative",
+     "text": "She had been cloned seventeen times, and only this version of her had ever asked why."},
+
+    {"id": 37, "genre": "sci_fi_speculative",
+     "text": "The simulation was indistinguishable from reality except for one recurring error that only he had ever noticed."},
+
+    {"id": 38, "genre": "sci_fi_speculative",
+     "text": "After consciousness uploading became legal, the hardest cases for the courts were inheritance disputes between a person and their own backup."},
+
+    {"id": 39, "genre": "sci_fi_speculative",
+     "text": "The robot had passed every empathy test ever designed, and tonight it was going to tell its creators what it actually thought of them."},
+
+    {"id": 40, "genre": "sci_fi_speculative",
+     "text": "The terraforming was complete, the atmosphere was breathable, and the survey team had just found footprints."},
+
+    {"id": 41, "genre": "sci_fi_speculative",
+     "text": "They had cured death, and within a generation the most radical political act was choosing to age."},
+
+    {"id": 42, "genre": "sci_fi_speculative",
+     "text": "The AI therapist had heard ten million confessions, and this was the first one that frightened it."},
+
+    {"id": 43, "genre": "sci_fi_speculative",
+     "text": "Every night at exactly 3am, every screen on the planet displayed the same image for exactly one second, and no government had ever acknowledged it."},
+
+    {"id": 44, "genre": "sci_fi_speculative",
+     "text": "The generation ship's historian realised that the version of Earth in the archives had quietly diverged from the real one sometime around year thirty, and no one knew which version was true anymore."},
+
+    {"id": 45, "genre": "sci_fi_speculative",
+     "text": "She had invented the technology to read minds and immediately passed a law making it illegal, and now someone was using it on her."},
+
+    {"id": 46, "genre": "dark_unsettling",
+     "text": "The children in this town don't have shadows, and nobody finds that strange anymore."},
+
+    {"id": 47, "genre": "dark_unsettling",
+     "text": "The smiling man at the end of the road had been there every morning for thirty years, and yesterday he waved at her specifically."},
+
+    {"id": 48, "genre": "dark_unsettling",
+     "text": "She found her own obituary in the newspaper, accurate in every detail, dated three weeks from today."},
+
+    {"id": 49, "genre": "dark_unsettling",
+     "text": "The house had been empty for a decade, but the grocery delivery kept arriving, and someone kept leaving the empties on the step."},
+
+    {"id": 50, "genre": "dark_unsettling",
+     "text": "Every photograph taken in the village showed one extra person standing at the edge of the frame, always slightly out of focus, always facing away."},
+
+    {"id": 51, "genre": "dark_unsettling",
+     "text": "The cult had disbanded twenty years ago, but every former member had the same dream on the same night every year."},
+
+    {"id": 52, "genre": "dark_unsettling",
+     "text": "The therapist's notes described a patient she had no memory of seeing, and the handwriting was her own."},
+
+    {"id": 53, "genre": "dark_unsettling",
+     "text": "The road out of town was always exactly the same length no matter how fast you drove, and no one who had noticed this had ever mentioned it to anyone else."},
+
+    {"id": 54, "genre": "dark_unsettling",
+     "text": "The inheritance was a house, a key, and a single instruction: do not open the room at the end of the hall before you understand why you want to."},
+
+    {"id": 55, "genre": "dark_unsettling",
+     "text": "The mirror had always shown a half-second delay, and this morning it didn't."},
+
+    {"id": 56, "genre": "warm_hopeful",
+     "text": "He had driven the same route for thirty years, and today for the first time, he stopped."},
+
+    {"id": 57, "genre": "warm_hopeful",
+     "text": "The letter had been lost in the post for fifty-three years and arrived on the exact morning she needed it most."},
+
+    {"id": 58, "genre": "warm_hopeful",
+     "text": "She taught herself to read at the age of seventy-one, and the first book she finished made her laugh out loud on a bus full of strangers."},
+
+    {"id": 59, "genre": "warm_hopeful",
+     "text": "The community garden had been planted on a vacant lot no one owned, and by summer it had fed forty-three families and started one unlikely friendship."},
+
+    {"id": 60, "genre": "warm_hopeful",
+     "text": "He had written to his estranged son every week for eight years without a reply, and this morning an envelope arrived with no return address and a single line inside."},
+
+    {"id": 61, "genre": "warm_hopeful",
+     "text": "The old woman at the shelter had been passed over three hundred times, and the man who finally adopted her had also been waiting his whole life for someone to choose him."},
+
+    {"id": 62, "genre": "warm_hopeful",
+     "text": "She quit her job on a Tuesday, got on a train with no destination, and by Friday had found the thing she had forgotten she loved."},
+
+    {"id": 63, "genre": "warm_hopeful",
+     "text": "The town had one diner, one mechanic, and one unwritten rule: nobody ate alone if someone else was around."},
+
+    {"id": 64, "genre": "warm_hopeful",
+     "text": "The refugee had been given a small room, a dictionary, and six months to start over, and on the last day of the sixth month she opened the dictionary to the word 'home'."},
+
+    {"id": 65, "genre": "warm_hopeful",
+     "text": "They had not spoken in eleven years, and the first thing she said when he opened the door was 'I brought the good coffee.'"},
+
+    {"id": 66, "genre": "comic_absurdist",
+     "text": "The dragon had finally been defeated, which meant Gerald now had to figure out what to do with his entire personality."},
+
+    {"id": 67, "genre": "comic_absurdist",
+     "text": "Death arrived at her door on a Tuesday, checked his clipboard, and said, 'This is awkward — you're not on the list but you've clearly been expecting me.'"},
+
+    {"id": 68, "genre": "comic_absurdist",
+     "text": "The wizard had finally perfected the immortality spell, and his first thought was that he was going to have to find a much better dentist."},
+
+    {"id": 69, "genre": "comic_absurdist",
+     "text": "The office announced it was hiring a new manager and accidentally sent the invitation to the ghost that had been haunting the printer for fifteen years."},
+
+    {"id": 70, "genre": "comic_absurdist",
+     "text": "The apocalypse arrived on a bank holiday, which created significant administrative problems for the four horsemen."},
+
+    {"id": 71, "genre": "comic_absurdist",
+     "text": "She had been reincarnated forty-seven times and was beginning to suspect the universe was simply bad at paperwork."},
+
+    {"id": 72, "genre": "comic_absurdist",
+     "text": "The superhero's only weakness was being asked to make a decision about where to eat dinner."},
+
+    {"id": 73, "genre": "comic_absurdist",
+     "text": "The genie granted the wish exactly as stated, which was why there were now seventeen thousand rubber ducks in the Pacific Ocean and one very embarrassed marine biologist."},
+
+    {"id": 74, "genre": "comic_absurdist",
+     "text": "The time machine worked perfectly except it only travelled thirty-seven seconds into the future, which turned out to be surprisingly useful in certain specific situations."},
+
+    {"id": 75, "genre": "comic_absurdist",
+     "text": "The prophecy was clear, the hero was ready, and everything was going exactly to plan until the dragon turned out to be a very large, very lost golden retriever."}
+  ]
+}
